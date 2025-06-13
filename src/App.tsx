@@ -58,7 +58,7 @@ const App = () => {
 
   return (
     <main tabIndex={0} className="form-container">
-      <h1 tabIndex={0}>Phone Number Form</h1>
+      <h1 tabIndex={0}>Form</h1>
       <form onSubmit={handleSubmit(onSubmit)}>
         <div className="form-group">
           <label htmlFor="phone">Phone Number</label>
