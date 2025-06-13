@@ -23,7 +23,7 @@ const App = () => {
       mode: "onChange",
     });
 
-  const { errors, isDirty, isValid } = formState;
+  const { errors } = formState;
 
   useEffect(() => {
     if (errors.phone) {
@@ -317,11 +317,7 @@ const App = () => {
           </fieldset>
         </div>
 
-        <button
-          // disabled={!isDirty || !isValid}
-          type="submit"
-          className="submit-button"
-        >
+        <button type="submit" className="submit-button">
           Submit
         </button>
 
