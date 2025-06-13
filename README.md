@@ -5,4 +5,4 @@
 - In Scenario 2, if we select "Yes" for the radio button, then we should pre-populate the 2 values selecting it by default.
 
 # Screenshot
-![alt text](<Screenshot 2025-06-13 at 9.47.42 PM.png>)
+![Screenshot](./assets/screenshots.png)
