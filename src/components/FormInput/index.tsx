@@ -30,6 +30,9 @@ const FormInput: React.FC<FormInputProps> = ({
       aria-describedby={error ? `${id}-error` : undefined}
       {...registration}
       onChange={onChangeFn}
+      onCut={(e) => e.preventDefault()}
+      onCopy={(e) => e.preventDefault()}
+      onPaste={(e) => e.preventDefault()}
     />
     {error && (
       <p
