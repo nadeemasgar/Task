@@ -22,7 +22,7 @@ const CheckBoxGroup: React.FC<CheckBoxProps> = ({
 }) => (
   <>
     {checkBoxOptions.map((opt) => (
-      <div>
+      <div key={opt.id}>
         <input
           type="checkbox"
           id={opt.id}

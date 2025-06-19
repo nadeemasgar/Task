@@ -1,6 +1,5 @@
 import React from "react";
 import type { FieldError, UseFormRegisterReturn } from "react-hook-form";
-import FormInput from "../FormInput";
 
 interface Option {
   id: string;
@@ -24,7 +23,7 @@ const RadioGroup: React.FC<RadioInputProps> = ({
   return (
     <div>
       {radioOptions.map((opt) => (
-        <>
+        <React.Fragment key={opt.id}>
           <input
             type="radio"
             id={opt.id}
@@ -33,7 +32,7 @@ const RadioGroup: React.FC<RadioInputProps> = ({
             aria-invalid={error ? "true" : "false"}
           />
           <label htmlFor={opt.id}>{opt.label}</label>
-        </>
+        </React.Fragment>
       ))}
       {error && (
         <p
