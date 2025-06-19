@@ -1,6 +1,9 @@
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { DevTool } from "@hookform/devtools";
+import FormInput from "./components/FormInput";
+import RadioGroup from "./components/RadioGroup";
+import CheckBoxGroup from "./components/CheckBox";
 import "./App.css";
 
 type FormValue = {
@@ -14,7 +17,7 @@ type FormValue = {
 
 const App = () => {
   const [successMessage, setSuccessMessage] = useState<string>("");
-  const { register, control, handleSubmit, watch, formState, reset } =
+  const { register, control, setValue, handleSubmit, watch, formState, reset } =
     useForm<FormValue>({
       defaultValues: {
         destination: ["Bali", "Switzerland"],
@@ -25,19 +28,37 @@ const App = () => {
 
   const { errors } = formState;
 
-  useEffect(() => {
-    if (errors.phone) {
-      document.getElementById("phone-error")?.focus();
-    }
-
-    if (errors.confirmPhone) {
-      document.getElementById("confirm-error")?.focus();
-    }
-  }, [errors]);
-
   const phone = watch("phone");
   const userChoice1 = watch("confirmChoice1");
   const userChoice2 = watch("confirmChoice2");
+
+  const formatPhone = (value: string) => {
+    const digits = value.replace(/\D/g, "").slice(0, 10);
+    const parts: string[] = [];
+    if (digits.length > 0) parts.push("(" + digits.slice(0, 3));
+    if (digits.length >= 3) parts.push(")-" + digits.slice(3, 6));
+    if (digits.length >= 6) parts.push("-" + digits.slice(6, 10));
+    return parts.join("");
+  };
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = formatPhone(e.target.value);
+    console.log(formatted, typeof formatted);
+    setValue("phone", formatted, {
+      shouldValidate: true,
+      shouldDirty: true,
+      shouldTouch: true,
+    });
+  };
+
+  const handleConfirmChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = formatPhone(e.target.value);
+    setValue("confirmPhone", formatted, {
+      shouldValidate: true,
+      shouldDirty: true,
+      shouldTouch: true,
+    });
+  };
 
   const validateStartDigit = (value: string) => {
     // Remove all non-digit characters from the string value
@@ -61,14 +82,13 @@ const App = () => {
       <h1 tabIndex={0}>Form</h1>
       <form onSubmit={handleSubmit(onSubmit)}>
         <div className="form-group">
-          <label htmlFor="phone">Phone Number</label>
-          <input
+          <FormInput
+            label="Phone Number"
             id="phone"
-            type="tel"
+            type="text"
             placeholder="(###)-###-####"
-            aria-invalid={errors.phone ? "true" : "false"}
-            aria-describedby={errors.phone ? "phone-error" : undefined}
-            {...register("phone", {
+            error={errors.phone}
+            registration={register("phone", {
               required: "Phone number is required",
               validate: validateStartDigit,
               pattern: {
@@ -77,28 +97,18 @@ const App = () => {
                   "Invalid format. Please follow the format (###)-###-####",
               },
             })}
+            onChangeFn={handlePhoneChange}
           />
-          {errors.phone && (
-            <p
-              role="alert"
-              tabIndex={-1}
-              className="error-message"
-              id="phone-error"
-            >
-              {errors.phone.message}
-            </p>
-          )}
         </div>
 
         <div className="form-group">
-          <label htmlFor="confirmPhone">Confirm Phone Number</label>
-          <input
-            type="tel"
+          <FormInput
+            label="Confirm Phone Number"
             id="confirmPhone"
+            type="text"
             placeholder="(###)-###-####"
-            aria-invalid={errors.confirmPhone ? "true" : "false"}
-            aria-describedby={errors.confirmPhone ? "confirm-error" : undefined}
-            {...register("confirmPhone", {
+            error={errors.confirmPhone}
+            registration={register("confirmPhone", {
               required: "Please confirm your phone number",
               validate: (value) => {
                 const digits = value.replace(/\D/g, "");
@@ -117,121 +127,51 @@ const App = () => {
                   "Invalid format. Please follow the format (###)-###-####",
               },
             })}
+            onChangeFn={handleConfirmChange}
           />
-          {errors.confirmPhone && (
-            <p
-              tabIndex={-1}
-              role="alert"
-              className="error-message"
-              id="confirm-error"
-            >
-              {errors.confirmPhone.message}
-            </p>
-          )}
         </div>
 
         <div className="form-group">
           <div>---- Scenario-1 ----</div>
           <fieldset
             aria-describedby={
-              errors.confirmChoice1 ? "confirm-choice1" : undefined
+              errors.confirmChoice1 ? "confirmChoice1-error" : undefined
             }
           >
             <legend>Select the Vehicle:</legend>
 
-            <div>
-              <input
-                type="radio"
-                id="Yes1"
-                aria-invalid={errors.confirmChoice1 ? "true" : "false"}
-                value="Yes1"
-                {...register("confirmChoice1", {
-                  required: "Please select a choice",
-                })}
-              />
-              <label htmlFor="Yes1">Yes</label> <br />
-              <input
-                type="radio"
-                id="No1"
-                aria-invalid={errors.confirmChoice1 ? "true" : "false"}
-                value="No1"
-                {...register("confirmChoice1", {
-                  required: "Please select a choice",
-                })}
-              />
-              <label htmlFor="No1">No</label>
-            </div>
+            <RadioGroup
+              radioName="confirmChoice1"
+              radioOptions={[
+                { id: "Yes1", label: "Yes", value: "Yes1" },
+                { id: "No1", label: "No", value: "No1" },
+              ]}
+              error={errors.confirmChoice1}
+              registeration={register("confirmChoice1", {
+                required: "Please select a choice",
+              })}
+            />
 
-            {errors.confirmChoice1 && (
-              <p
-                role="alert"
-                tabIndex={-1}
-                className="error-message"
-                id="confirm-choice1"
-              >
-                Please select any one option
-              </p>
-            )}
             <br />
             {userChoice1 === "Yes1" && (
               <fieldset
                 aria-describedby={errors.vehicle ? "vehicle-error" : undefined}
               >
                 <legend>Select at least one vehicle</legend>
-                <input
-                  type="checkbox"
-                  id="vehicle1"
-                  aria-invalid={errors.vehicle ? "true" : "false"}
-                  value="Bike"
-                  {...register("vehicle", {
+                <CheckBoxGroup
+                  checkboxName="vehicle"
+                  checkBoxOptions={[
+                    { id: "vehicle1", label: "I have a bike", value: "Bike" },
+                    { id: "vehicle2", label: "I have a car", value: "Car" },
+                    { id: "vehicle3", label: "I have a plane", value: "Plane" },
+                    { id: "vehicle4", label: "I have a boat", value: "Boat" },
+                  ]}
+                  error={errors.vehicle}
+                  registeration={register("vehicle", {
                     validate: (value) =>
                       value?.length > 0 || "Please select at least on vehicle",
                   })}
                 />
-                <label htmlFor="vehicle1">I have a bike</label> <br />
-                <input
-                  type="checkbox"
-                  id="vehicle2"
-                  aria-invalid={errors.vehicle ? "true" : "false"}
-                  value="Car"
-                  {...register("vehicle", {
-                    validate: (value) =>
-                      value?.length > 0 || "Please select at least on vehicle",
-                  })}
-                />
-                <label htmlFor="vehicle2">I have a car</label> <br />
-                <input
-                  type="checkbox"
-                  id="vehicle3"
-                  aria-invalid={errors.vehicle ? "true" : "false"}
-                  value="Plane"
-                  {...register("vehicle", {
-                    validate: (value) =>
-                      value?.length > 0 || "Please select at least on vehicle",
-                  })}
-                />
-                <label htmlFor="vehicle3">I have a plane</label> <br />
-                <input
-                  type="checkbox"
-                  id="vehicle4"
-                  aria-invalid={errors.vehicle ? "true" : "false"}
-                  value="Boat"
-                  {...register("vehicle", {
-                    validate: (value) =>
-                      value?.length > 0 || "Please select at least on vehicle",
-                  })}
-                />
-                <label htmlFor="vehicle4">I have a boat</label>
-                {errors.vehicle && (
-                  <p
-                    role="alert"
-                    tabIndex={-1}
-                    className="error-message"
-                    id="vehicle-error"
-                  >
-                    Please select any one checkbox
-                  </p>
-                )}
               </fieldset>
             )}
           </fieldset>
@@ -239,79 +179,43 @@ const App = () => {
 
         <div className="form-group">
           <div>---- Scenario-2 ----</div>
-          <fieldset>
-            <legend
-              aria-describedby={
-                errors.confirmChoice2 ? "confirm-choice2" : undefined
-              }
-            >
-              Select the Destination:
-            </legend>
+          <fieldset
+            aria-describedby={
+              errors.confirmChoice2 ? "confirmChoice2-error" : undefined
+            }
+          >
+            <legend>Select the Destination:</legend>
 
-            <div>
-              <input
-                type="radio"
-                id="Yes2"
-                aria-invalid={errors.confirmChoice2 ? "true" : "false"}
-                value="Yes2"
-                {...register("confirmChoice2", {
-                  required: "Please select a choice",
-                })}
-              />
-              <label htmlFor="Yes2">Yes</label> <br />
-              <input
-                type="radio"
-                id="No2"
-                aria-invalid={errors.confirmChoice2 ? "true" : "false"}
-                value="No2"
-                {...register("confirmChoice2", {
-                  required: "Please select a choice",
-                })}
-              />
-              <label htmlFor="No2">No</label>
-            </div>
-            {errors.confirmChoice2 && (
-              <p
-                role="alert"
-                tabIndex={-1}
-                className="error-message"
-                id="confirm-choice2"
-              >
-                Please select any one option
-              </p>
-            )}
+            <RadioGroup
+              radioName="confirmChoice1"
+              radioOptions={[
+                { id: "Yes2", label: "Yes", value: "Yes2" },
+                { id: "No2", label: "No", value: "No2" },
+              ]}
+              error={errors.confirmChoice2}
+              registeration={register("confirmChoice2", {
+                required: "Please select a choice",
+              })}
+            />
 
             <br />
             {userChoice2 === "Yes2" && (
               <fieldset>
-                <input
-                  type="checkbox"
-                  id="Bali"
-                  value="Bali"
-                  {...register("destination")}
+                <CheckBoxGroup
+                  checkboxName="destination"
+                  checkBoxOptions={[
+                    { id: "Bali", label: "Bali", value: "Bali" },
+                    {
+                      id: "Switzerland",
+                      label: "Switzerland",
+                      value: "Switzerland",
+                    },
+                    { id: "Italy", label: "Italy", value: "Italy" },
+                    { id: "Paris", label: "Paris", value: "Paris" },
+                  ]}
+                  error={errors.destination}
+                  registeration={register("destination")}
                 />
-                <label htmlFor="Bali">Bali</label> <br />
-                <input
-                  type="checkbox"
-                  id="Switzerland"
-                  value="Switzerland"
-                  {...register("destination")}
-                />
-                <label htmlFor="Switzerland">Switzerland</label> <br />
-                <input
-                  type="checkbox"
-                  id="Italy"
-                  value="Italy"
-                  {...register("destination")}
-                />
-                <label htmlFor="Italy">Italy</label> <br />
-                <input
-                  type="checkbox"
-                  id="Paris"
-                  value="Paris"
-                  {...register("destination")}
-                />
-                <label htmlFor="Paris">Paris</label>
               </fieldset>
             )}
           </fieldset>
